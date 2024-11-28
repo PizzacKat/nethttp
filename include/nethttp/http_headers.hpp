@@ -15,6 +15,10 @@ namespace nethttp {
 
         }
 
+        http_header_values(const char *value): _values{value} {
+
+        }
+
         http_header_values(std::vector<std::string> values): _values{std::move(values)} {
 
         }
@@ -36,6 +40,10 @@ namespace nethttp {
 
         [[nodiscard]] std::size_t count() const {
             return _values.size();
+        }
+
+        [[nodiscard]] const std::string &get(const std::size_t i) const {
+            return _values.at(i);
         }
 
         [[nodiscard]] std::vector<std::string>::iterator begin() {
@@ -112,34 +120,23 @@ namespace nethttp {
         std::unordered_map<std::string, http_header_values> _map;
     };
 
-    namespace content_headers {
-        inline const http_header_values &allow(const http_headers &headers) {
-            return headers["Allow"];
-        }
-
-        inline void allow(http_headers &headers, const http_header_values &allow) {
-            if (!headers.has("Allow")) {
-                headers.add("Allow", allow);
-                return;
-            }
-            headers["Allow"] = allow;
-        }
-
-        struct content_disposition_value {
-            content_disposition_value() = default;
-
-            std::chrono::milliseconds creation_time;
-            std::chrono::milliseconds modification_time;
-            std::string filename;
-            std::string filename_star;
-            std::string name;
-
-        };
-
-        inline const content_disposition_value &content_disposition(const http_headers &headers) {
-            return headers["Allow"];
-        }
-    }
+    // namespace content_headers {
+    //     inline const http_header_values &allow(const http_headers &headers) {
+    //         return headers["Allow"];
+    //     }
+    //
+    //     inline void allow(http_headers &headers, const http_header_values &allow) {
+    //         if (!headers.has("Allow")) {
+    //             headers.add("Allow", allow);
+    //             return;
+    //         }
+    //         headers["Allow"] = allow;
+    //     }
+    //
+    //     inline const content_disposition_value &content_disposition(const http_headers &headers) {
+    //         return headers["Allow"];
+    //     }
+    // }
 }
 
 #endif //nethttp_http_headers
