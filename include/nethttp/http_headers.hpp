@@ -1,10 +1,10 @@
 #ifndef nethttp_http_headers
 #define nethttp_http_headers
 
-#include <chrono>
 #include <string>
 #include <unordered_map>
 #include <vector>
+#include <algorithm>
 
 namespace nethttp {
     class http_header_values {
@@ -34,6 +34,10 @@ namespace nethttp {
             return *this;
         }
 
+        [[nodiscard]] bool contains(const std::string &name) const {
+            return std::ranges::find(_values, name) != _values.end();
+        }
+
         void add(std::string value) {
             _values.emplace_back(std::move(value));
         }
@@ -42,7 +46,7 @@ namespace nethttp {
             return _values.size();
         }
 
-        [[nodiscard]] const std::string &get(const std::size_t i) const {
+        [[nodiscard]] const std::string &get(const std::size_t i = 0) const {
             return _values.at(i);
         }
 
@@ -69,12 +73,23 @@ namespace nethttp {
     public:
         http_headers()= default;
 
+        void add_or_set(std::string name, http_header_values values) {
+            if (has(name))
+                get(name) = std::move(values);
+            else
+                add(std::move(name), std::move(values));
+        }
+
         void add(std::string name, http_header_values values) {
             _map.emplace(std::move(name), std::move(values));
         }
 
         void clear() {
             _map.clear();
+        }
+
+        void remove(const std::string &name) {
+            _map.erase(name);
         }
 
         [[nodiscard]] bool has(const std::string &key) const {
@@ -119,6 +134,60 @@ namespace nethttp {
     private:
         std::unordered_map<std::string, http_header_values> _map;
     };
+
+    inline std::ostream &to_stream(const http_headers &headers, std::ostream &os) {
+        for (const auto &[name, values] : headers) {
+            os << name << ": ";
+            for (std::size_t i = 0; i < values.count(); i++) {
+                os << values.get(i);
+                if (i != values.count() - 1)
+                    os << ", ";
+            }
+            os << "\r\n";
+        }
+        os << "\r\n";
+        return os;
+    }
+
+    inline std::istream &from_stream(http_headers &headers, std::istream &is) {
+        while (is.peek() != '\r') {
+            std::string key;
+            if (!std::getline(is, key, ':')) {
+                is.setstate(std::ios::failbit);
+                return is;
+            }
+            http_header_values values;
+            if (is.peek() == '\r') {
+                is.setstate(std::ios::failbit);
+                return is;
+            }
+            std::string values_string;
+            is >> std::ws;
+            if (!std::getline(is, values_string, '\r')) {
+                is.setstate(std::ios::failbit);
+                return is;
+            }
+            if (values_string.find(',') == std::string::npos)
+                values += values_string;
+            else {
+                std::string value;
+                std::stringstream ss(values_string);
+                while (std::getline(ss, value, ',')) {
+                    values += value;
+                }
+            }
+            if (is.get() != '\n') {
+                is.setstate(std::ios::failbit);
+                return is;
+            }
+            headers.add(key, values);
+        }
+        if (is.get() != '\r' || is.get() != '\n') {
+            is.setstate(std::ios::failbit);
+            return is;
+        }
+        return is;
+    }
 
     // namespace content_headers {
     //     inline const http_header_values &allow(const http_headers &headers) {
