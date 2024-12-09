@@ -1,7 +1,6 @@
 #ifndef nethttp_enums
 #define nethttp_enums
 
-#include <pair>
 #include <string>
 
 namespace nethttp {
