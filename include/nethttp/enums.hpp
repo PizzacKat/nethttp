@@ -1,6 +1,9 @@
 #ifndef nethttp_enums
 #define nethttp_enums
 
+#include <pair>
+#include <string>
+
 namespace nethttp {
     typedef std::pair<std::uint16_t, std::uint16_t> version;
 
@@ -26,10 +29,8 @@ namespace nethttp {
         }
         if (!(is >> version.first))
             return is;
-        if (!is || is.get() != '.') {
-            is.setstate(std::ios::failbit);
+        if (is.peek() != '.')
             return is;
-        }
         if (!(is >> version.second))
             return is;
         return is;

@@ -30,8 +30,8 @@ namespace nethttp {
             _listener.bind(address, port);
         }
 
-        void add_endpoint(const http_method method, const std::string &path, const std::function<void(http_server &server, const http_request &request, http_response &response)> &callback) {
-            _endpoints.emplace_back(method, path, callback);
+        void add_endpoint(const int methods, const std::string &path, const std::function<void(http_server &server, const http_request &request, http_response &response)> &callback) {
+            _endpoints.emplace_back(methods, path, callback);
         }
 
         void start() {
@@ -107,6 +107,10 @@ namespace nethttp {
             int methods;
             std::string path;
             std::function<void(http_server &server, const http_request &request, http_response &response)> callback;
+
+            endpoint(int methods, const std::string &path, const std::function<void(http_server &server, const http_request &request, http_response &response)> &callback): methods(methods), path(path), callback(callback) {
+
+            }
         };
 
         netsock::tcp_listener _listener;
