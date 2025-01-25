@@ -69,16 +69,26 @@ namespace nethttp {
 
     std::istream & from_stream(http_response_message &response, std::istream &is) {
         version version;
-        if (!from_stream(version, is))
+        if (!from_stream(version, is)) {
+            is.setstate(std::ios::failbit);
             return is;
+        }
         response.set_version(version.first, version.second);
         std::int16_t status;
-        if (!(is >> status))
+        if (!(is >> status)) {
+            is.setstate(std::ios::failbit);
             return is;
+        }
         response.set_status(status);
-        std::string message;
-        if (std::getline(is, message, '\r').fail())
+        if (is.get() != ' ') {
+            is.setstate(std::ios::failbit);
             return is;
+        }
+        std::string message;
+        if (!std::getline(is, message, '\r')) {
+            is.setstate(std::ios::failbit);
+            return is;
+        }
         if (is.get() != '\n') {
             is.setstate(std::ios::failbit);
             return is;
