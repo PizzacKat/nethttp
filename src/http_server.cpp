@@ -21,10 +21,20 @@ namespace nethttp {
         _listener.bind(address, port);
     }
 
-    void http_server::add_endpoint(const int methods, const std::string &path,
-        const std::function<void(http_server &server, const http_request &request, http_response &response)> &callback)
-    {
+    bool http_server::listening() const {
+        return _listener.listening();
+    }
+
+    void http_server::add_endpoint(const int methods, const std::string &path, const std::function<void(http_server &server, const http_request &request, http_response &response)> &callback) {
         _endpoints.emplace_back(methods, path, callback);
+    }
+
+    void http_server::set_exception_callback(const error_callback &exception_callback) {
+        _on_exception_callback = exception_callback;
+    }
+
+    void http_server::set_default_callback(const endpoint_callback &default_callback) {
+        _default_callback = default_callback;
     }
 
     void http_server::start() {
@@ -47,6 +57,7 @@ namespace nethttp {
                     if (methods & request.method() && endpoint_match(path, request.path(), request._wildcards)) {
                         endpoints.emplace_back(callback, request._wildcards);
                     }
+                bool found = false;
                 if (!endpoints.empty()) {
                     std::function<void(http_server &server, const http_request &request, http_response &response)> callback;
                     std::size_t less = 999999;
@@ -57,8 +68,15 @@ namespace nethttp {
                         }
                     }
                     response = http_response(200, "OK");
-                    callback(*this, request, response);
+                    try {
+                        callback(*this, request, response);
+                    } catch (const std::exception &exception) {
+                        _on_exception_callback(*this, exception, response);
+                    }
+                    found = true;
                 }
+                if (!found)
+                    _default_callback(*this, request, response);
                 to_stream(response.message(), stream).flush();
                 client.close();
             }, std::move(client)).detach();
@@ -96,4 +114,13 @@ namespace nethttp {
             return false;
         return true;
     }
+
+    void http_server::default_exception_callback(http_server &, const std::exception &, http_response &response) {
+        response = http_response(500, "Internal Server Error");
+    }
+
+    void http_server::default_callback(http_server &, const http_request &, http_response &response) {
+        response = http_response(404, "Not Found");
+    }
+
 }

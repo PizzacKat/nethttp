@@ -16,6 +16,7 @@ set(src src/body.cpp
         src/http_response.cpp
         src/http_response_message.cpp
         src/http_server.cpp
+        include/nethttp/responses.hpp
 )
 
 add_library(nethttp ${src})
