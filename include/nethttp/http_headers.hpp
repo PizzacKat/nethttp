@@ -61,8 +61,8 @@ namespace nethttp {
         std::unordered_map<std::string, http_header_values> _map;
     };
 
-    inline std::ostream &to_stream(const http_headers &headers, std::ostream &os);
-    inline std::istream &from_stream(http_headers &headers, std::istream &is);
+    std::ostream &to_stream(const http_headers &headers, std::ostream &os);
+    std::istream &from_stream(http_headers &headers, std::istream &is);
 
     // namespace content_headers {
     //     inline const http_header_values &allow(const http_headers &headers) {
