@@ -9,62 +9,27 @@
 namespace nethttp {
     class http_header_values {
     public:
-        http_header_values()= default;
+        http_header_values();
+        http_header_values(std::string value);
+        http_header_values(const char *value);
+        http_header_values(std::vector<std::string> values);
 
-        http_header_values(std::string value): _values{std::move(value)} {
+        http_header_values operator+(const http_header_values &other) const;
+        http_header_values &operator+=(const http_header_values &other);
 
-        }
+        [[nodiscard]] bool contains(const std::string &name) const;
 
-        http_header_values(const char *value): _values{value} {
+        void add(std::string value);
 
-        }
+        [[nodiscard]] std::size_t count() const;
 
-        http_header_values(std::vector<std::string> values): _values{std::move(values)} {
+        [[nodiscard]] const std::string &get(std::size_t i = 0) const;
 
-        }
+        [[nodiscard]] std::vector<std::string>::iterator begin();
+        [[nodiscard]] std::vector<std::string>::iterator end();
+        [[nodiscard]] std::vector<std::string>::const_iterator begin() const;
+        [[nodiscard]] std::vector<std::string>::const_iterator end() const;
 
-        http_header_values operator+(const http_header_values &other) const {
-            auto copy = *this;
-            copy._values.insert(copy._values.end(), other._values.begin(), other._values.end());
-            return copy;
-        }
-
-        http_header_values &operator+=(const http_header_values &other) {
-            _values.insert(_values.end(), other._values.begin(), other._values.end());
-            return *this;
-        }
-
-        [[nodiscard]] bool contains(const std::string &name) const {
-            return std::ranges::find(_values, name) != _values.end();
-        }
-
-        void add(std::string value) {
-            _values.emplace_back(std::move(value));
-        }
-
-        [[nodiscard]] std::size_t count() const {
-            return _values.size();
-        }
-
-        [[nodiscard]] const std::string &get(const std::size_t i = 0) const {
-            return _values.at(i);
-        }
-
-        [[nodiscard]] std::vector<std::string>::iterator begin() {
-            return _values.begin();
-        }
-
-        [[nodiscard]] std::vector<std::string>::iterator end() {
-            return _values.end();
-        }
-
-        [[nodiscard]] std::vector<std::string>::const_iterator begin() const {
-            return _values.begin();
-        }
-
-        [[nodiscard]] std::vector<std::string>::const_iterator end() const {
-            return _values.end();
-        }
     private:
         std::vector<std::string> _values;
     };
@@ -73,121 +38,31 @@ namespace nethttp {
     public:
         http_headers()= default;
 
-        void add_or_set(std::string name, http_header_values values) {
-            if (has(name))
-                get(name) = std::move(values);
-            else
-                add(std::move(name), std::move(values));
-        }
+        void add_or_set(std::string name, http_header_values values);
+        void add(std::string name, http_header_values values);
+        void clear();
+        void remove(const std::string &name);
 
-        void add(std::string name, http_header_values values) {
-            _map.emplace(std::move(name), std::move(values));
-        }
+        [[nodiscard]] bool has(const std::string &key) const;
 
-        void clear() {
-            _map.clear();
-        }
+        [[nodiscard]] const http_header_values &get(const std::string &key) const;
+        [[nodiscard]] const http_header_values &operator[](const std::string &key) const;
+        [[nodiscard]] http_header_values &get(const std::string &key);
+        [[nodiscard]] http_header_values &operator[](const std::string &key);
 
-        void remove(const std::string &name) {
-            _map.erase(name);
-        }
+        [[nodiscard]] std::size_t size() const;
 
-        [[nodiscard]] bool has(const std::string &key) const {
-            return _map.contains(key);
-        }
+        [[nodiscard]] std::unordered_map<std::string, http_header_values>::iterator begin();
+        [[nodiscard]] std::unordered_map<std::string, http_header_values>::iterator end();
+        [[nodiscard]] std::unordered_map<std::string, http_header_values>::const_iterator begin() const;
+        [[nodiscard]] std::unordered_map<std::string, http_header_values>::const_iterator end() const;
 
-        [[nodiscard]] const http_header_values &get(const std::string &key) const {
-            return _map.at(key);
-        }
-
-        [[nodiscard]] const http_header_values &operator[](const std::string &key) const {
-            return _map.at(key);
-        }
-
-        [[nodiscard]] http_header_values &get(const std::string &key) {
-            return _map.at(key);
-        }
-
-        [[nodiscard]] http_header_values &operator[](const std::string &key) {
-            return _map.at(key);
-        }
-
-        [[nodiscard]] std::size_t size() const {
-            return _map.size();
-        }
-
-        [[nodiscard]] std::unordered_map<std::string, http_header_values>::iterator begin() {
-            return _map.begin();
-        }
-
-        [[nodiscard]] std::unordered_map<std::string, http_header_values>::iterator end() {
-            return _map.end();
-        }
-
-        [[nodiscard]] std::unordered_map<std::string, http_header_values>::const_iterator begin() const {
-            return _map.begin();
-        }
-
-        [[nodiscard]] std::unordered_map<std::string, http_header_values>::const_iterator end() const {
-            return _map.end();
-        }
     private:
         std::unordered_map<std::string, http_header_values> _map;
     };
 
-    inline std::ostream &to_stream(const http_headers &headers, std::ostream &os) {
-        for (const auto &[name, values] : headers) {
-            os << name << ": ";
-            for (std::size_t i = 0; i < values.count(); i++) {
-                os << values.get(i);
-                if (i != values.count() - 1)
-                    os << ", ";
-            }
-            os << "\r\n";
-        }
-        os << "\r\n";
-        return os;
-    }
-
-    inline std::istream &from_stream(http_headers &headers, std::istream &is) {
-        while (is.peek() != '\r') {
-            std::string key;
-            if (!std::getline(is, key, ':')) {
-                is.setstate(std::ios::failbit);
-                return is;
-            }
-            http_header_values values;
-            if (is.peek() == '\r') {
-                is.setstate(std::ios::failbit);
-                return is;
-            }
-            std::string values_string;
-            is >> std::ws;
-            if (!std::getline(is, values_string, '\r')) {
-                is.setstate(std::ios::failbit);
-                return is;
-            }
-            if (values_string.find(',') == std::string::npos)
-                values += values_string;
-            else {
-                std::string value;
-                std::stringstream ss(values_string);
-                while (std::getline(ss, value, ',')) {
-                    values += value;
-                }
-            }
-            if (is.get() != '\n') {
-                is.setstate(std::ios::failbit);
-                return is;
-            }
-            headers.add(key, values);
-        }
-        if (is.get() != '\r' || is.get() != '\n') {
-            is.setstate(std::ios::failbit);
-            return is;
-        }
-        return is;
-    }
+    inline std::ostream &to_stream(const http_headers &headers, std::ostream &os);
+    inline std::istream &from_stream(http_headers &headers, std::istream &is);
 
     // namespace content_headers {
     //     inline const http_header_values &allow(const http_headers &headers) {

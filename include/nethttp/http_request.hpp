@@ -7,99 +7,38 @@
 namespace nethttp {
     class http_request {
     public:
-        http_request(http_request_message message): _message(std::move(message)) {
+        http_request(http_request_message message);
+        http_request();
+        explicit http_request(http_method method);
 
-        }
+        void set_method(http_method method);
+        [[nodiscard]] http_method method() const;
 
-        http_request()= default;
+        void set_path(const std::string &path);
+        [[nodiscard]] const std::string &path() const;
 
-        explicit http_request(const http_method method): _message(method) {
+        void set_version(std::uint16_t major, std::uint16_t minor);
+        [[nodiscard]] nethttp::version version() const;
 
-        }
+        void set_headers(const http_headers &headers);
+        void add_header(const std::string &name, const http_header_values &value);
+        [[nodiscard]] bool has_header(const std::string &name) const;
+        [[nodiscard]] http_header_values &get_header(const std::string &name);
+        [[nodiscard]] const http_header_values &get_header(const std::string &name) const;
 
-        void set_method(const http_method method) {
-            _message.set_method(method);
-        }
+        [[nodiscard]] http_headers &headers();
+        [[nodiscard]] const http_headers &headers() const;
 
-        [[nodiscard]] http_method method() const {
-            return _message.method();
-        }
+        void set_body(const std::string &body);
+        void set_body(const http_body &body);
+        [[nodiscard]] std::string body() const;
+        [[nodiscard]] const std::string &raw_body() const;
 
-        void set_path(const std::string &path) {
-            _message.set_path(path);
-        }
+        [[nodiscard]] http_request_message &message();
+        [[nodiscard]] const http_request_message &message() const;
 
-        [[nodiscard]] const std::string &path() const {
-            return _message.path();
-        }
+        [[nodiscard]] const std::string &wildcard(std::size_t i = 0) const;
 
-        void set_version(const std::uint16_t major, const std::uint16_t minor) {
-            _message.set_version(major, minor);
-        }
-
-        [[nodiscard]] nethttp::version version() const {
-            return _message.version();
-        }
-
-        void set_headers(const http_headers &headers) {
-            _message.set_headers(headers);
-        }
-
-        void add_header(const std::string &name, const http_header_values &value) {
-            if (_message.headers().has(name)) {
-                _message.headers()[name] = value;
-                return;
-            }
-            _message.headers().add(name, value);
-        }
-
-        [[nodiscard]] bool has_header(const std::string &name) const {
-            return _message.headers().has(name);
-        }
-
-        [[nodiscard]] http_header_values &get_header(const std::string &name) {
-            return _message.headers().get(name);
-        }
-
-        [[nodiscard]] const http_header_values &get_header(const std::string &name) const {
-            return _message.headers().get(name);
-        }
-
-        [[nodiscard]] http_headers &headers() {
-            return _message.headers();
-        }
-
-        [[nodiscard]] const http_headers &headers() const {
-            return _message.headers();
-        }
-
-        void set_body(const std::string &body) {
-            _message.set_body(body);
-        }
-
-        void set_body(const http_body &body) {
-            body.add_to_message(_message.raw_body(), _message.headers());
-        }
-
-        [[nodiscard]] std::string body() const {
-            return _message.body();
-        }
-
-        [[nodiscard]] const std::string &raw_body() const {
-            return _message.raw_body();
-        }
-
-        [[nodiscard]] http_request_message &message() {
-            return _message;
-        }
-
-        [[nodiscard]] const http_request_message &message() const {
-            return _message;
-        }
-
-        [[nodiscard]] const std::string &wildcard(const std::size_t i = 0) const {
-            return _wildcards[i];
-        }
     private:
         friend class http_server;
         http_request_message _message;
