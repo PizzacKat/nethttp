@@ -20,7 +20,7 @@ namespace nethttp {
         netsock::tcp_stream stream(client);
         const auto addresses = netsock::dns::resolve(url.host());
         if (addresses.empty())
-            throw std::invalid_argument("url resolution failed");
+            throw http_request_error("Error resolving url (perhaps you put the wrong host)");
         for (const auto &address : addresses) {
             try {
                 client.connect(address & (url.port() == 0 ? 80 : url.port()));
@@ -31,11 +31,14 @@ namespace nethttp {
             }
         }
         if (!client.connected()) {
-            throw std::invalid_argument("connection failed");
+            throw http_request_error("Error connecting (perhaps you put the wrong address)");
         }
         http_response_message response;
-        to_stream(request.message(), stream).flush();
-        from_stream(response, stream);
+        if (to_stream(request.message(), stream).fail())
+            throw http_request_error("Error writing request to stream (perhaps the library messed up)");
+        stream.flush();
+        if (from_stream(response, stream).fail())
+            throw http_request_error("Error reading response from stream (perhaps the library messed up)");
         return response;
     }
 

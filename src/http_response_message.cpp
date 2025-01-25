@@ -77,7 +77,7 @@ namespace nethttp {
             return is;
         response.set_status(status);
         std::string message;
-        if (!std::getline(is, message, '\r'))
+        if (std::getline(is, message, '\r').fail())
             return is;
         if (is.get() != '\n') {
             is.setstate(std::ios::failbit);

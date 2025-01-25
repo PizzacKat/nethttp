@@ -7,6 +7,17 @@
 #include "netsock/dns.hpp"
 
 namespace nethttp {
+    class http_request_error : public std::runtime_error {
+    public:
+        explicit http_request_error(const std::string &str): std::runtime_error(str) {
+
+        }
+
+        explicit http_request_error(const char *str): std::runtime_error(str) {
+
+        }
+    };
+
     class http_client {
     public:
         http_client();

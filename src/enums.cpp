@@ -23,6 +23,7 @@ namespace nethttp {
             return is;
         if (is.peek() != '.')
             return is;
+        is.ignore();
         if (!(is >> version.second))
             return is;
         return is;
