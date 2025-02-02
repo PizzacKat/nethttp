@@ -3,8 +3,10 @@ project(nethttp VERSION 0.1.0 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 20)
 
-link_directories(lib)
-include_directories(include)
+link_directories(libs)
+include_directories(include libs/netsock/include)
+
+add_subdirectory(libs/netsock)
 
 set(src src/body.cpp
         src/enums.cpp
@@ -16,8 +18,15 @@ set(src src/body.cpp
         src/http_response.cpp
         src/http_response_message.cpp
         src/http_server.cpp
-        include/nethttp/responses.hpp
 )
 
-add_library(nethttp ${src})
+if (BUILD_SHARED)
+    set(CMAKE_DEBUG_POSTFIX  "-d")
+    set(CMAKE_RELEASE_POSTFIX "")
+    add_library(nethttp SHARED ${src})
+else ()
+    set(CMAKE_DEBUG_POSTFIX  "-ds")
+    set(CMAKE_RELEASE_POSTFIX "-s")
+    add_library(nethttp ${src})
+endif ()
 target_link_libraries(nethttp netsock)
