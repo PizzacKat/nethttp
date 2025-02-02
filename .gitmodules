@@ -1,0 +1,3 @@
+[submodule "libs/netsock"]
+	path = libs/netsock
+	url = https://github.com/pizzackat/netsock.git
