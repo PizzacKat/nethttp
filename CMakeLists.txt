@@ -17,14 +17,14 @@ set(src src/body.cpp
         src/http_server.cpp
 )
 
-if (BUILD_SHARED)
+if (BUILD_SHARED_LIBS)
     set(CMAKE_DEBUG_POSTFIX  "-d")
     set(CMAKE_RELEASE_POSTFIX "")
-    add_library(nethttp SHARED ${src})
 else ()
     set(CMAKE_DEBUG_POSTFIX  "-ds")
     set(CMAKE_RELEASE_POSTFIX "-s")
-    add_library(nethttp ${src})
 endif ()
+
+add_library(nethttp ${src})
 target_link_libraries(nethttp netsock)
 target_include_directories(nethttp PUBLIC include)
