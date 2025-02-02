@@ -3,9 +3,6 @@ project(nethttp VERSION 0.1.0 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 20)
 
-link_directories(libs)
-include_directories(include libs/netsock/include)
-
 add_subdirectory(libs/netsock)
 
 set(src src/body.cpp
@@ -30,3 +27,4 @@ else ()
     add_library(nethttp ${src})
 endif ()
 target_link_libraries(nethttp netsock)
+target_include_directories(nethttp PUBLIC include)
