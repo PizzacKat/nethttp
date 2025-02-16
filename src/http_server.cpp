@@ -40,7 +40,7 @@ namespace nethttp {
         _default_callback = default_callback;
     }
 
-    static constexpr std::chrono::milliseconds default_keep_alive_timeout{10};
+    static constexpr std::chrono::seconds default_keep_alive_timeout{10};
 
     struct keep_alive {
         bool active = true;

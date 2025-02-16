@@ -19,7 +19,7 @@ namespace nethttp {
         _path = path;
     }
 
-    const std::string & http_request_message::path() const {
+    const std::string &http_request_message::path() const {
         return _path;
     }
 
@@ -35,7 +35,7 @@ namespace nethttp {
         _headers = headers;
     }
 
-    http_headers & http_request_message::headers() {
+    http_headers &http_request_message::headers() {
         return _headers;
     }
 
@@ -51,15 +51,15 @@ namespace nethttp {
         return parse_body(_body, _headers);
     }
 
-    std::string & http_request_message::raw_body() {
+    std::string &http_request_message::raw_body() {
         return _body;
     }
 
-    const std::string & http_request_message::raw_body() const {
+    const std::string &http_request_message::raw_body() const {
         return _body;
     }
 
-    std::ostream & to_stream(const http_request_message &message, std::ostream &os) {
+    std::ostream &to_stream(const http_request_message &message, std::ostream &os) {
         return to_stream(message.headers(), to_stream(message.version(), os << to_string(message.method()) << ' ' << message.path() << ' ') << "\r\n") << message.body();
     }
 
@@ -69,7 +69,7 @@ namespace nethttp {
         return ss.str();
     }
 
-    std::istream & from_stream(http_request_message &request, std::istream &is) {
+    std::istream &from_stream(http_request_message &request, std::istream &is) {
         std::string method_string;
         http_method method;
         is >> method_string;
