@@ -17,6 +17,7 @@ namespace nethttp {
         if (!request.has_header("Host"))
             request.add_header("Host", url.host());
         netsock::tcp_client client;
+        client.reuse_address(true);
         netsock::tcp_stream stream(client);
         const auto addresses = netsock::dns::resolve(url.host());
         if (addresses.empty())

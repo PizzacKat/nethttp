@@ -17,14 +17,7 @@ set(src src/body.cpp
         src/http_server.cpp
 )
 
-if (BUILD_SHARED_LIBS)
-    set(CMAKE_DEBUG_POSTFIX  "-d")
-    set(CMAKE_RELEASE_POSTFIX "")
-    target_compile_options(nethttp PUBLIC "-fPIC")
-else ()
-    set(CMAKE_DEBUG_POSTFIX  "-ds")
-    set(CMAKE_RELEASE_POSTFIX "-s")
-endif ()
+set(CMAKE_DEBUG_POSTFIX  "-d")
 
 add_library(nethttp ${src})
 target_link_libraries(nethttp netsock)

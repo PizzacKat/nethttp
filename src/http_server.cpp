@@ -4,13 +4,15 @@
 #include <netsock/poll_list.hpp>
 
 namespace nethttp {
-    http_server::http_server() = default;
+    http_server::http_server() {
+        _listener.reuse_address(true);
+    }
 
-    http_server::http_server(const netsock::ip_endpoint &endpoint) {
+    http_server::http_server(const netsock::ip_endpoint &endpoint): http_server() {
         listen(endpoint);
     }
 
-    http_server::http_server(const netsock::ip_address &address, const std::uint16_t port) {
+    http_server::http_server(const netsock::ip_address &address, const std::uint16_t port): http_server() {
         listen(address, port);
     }
 
